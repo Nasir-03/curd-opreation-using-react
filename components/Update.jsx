@@ -1,36 +1,54 @@
-import React, { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
 import { updateUsers } from './CurdSlice';
 
 export default function Update() {
-    const {id} = useParams();
-    const navigate = useNavigate()
-    const users = useSelector((state) => state.curd.data)
-    const existingElement = users.filter((item) => item.id == id)
-    const dispatch = useDispatch()
+  const { id } = useParams(); // Get the ID from URL params
+  const navigate = useNavigate();
+  const users = useSelector((state) => state.curd.data); // Get the users data from Redux store
+  const dispatch = useDispatch();
 
-    const {name, email} = existingElement;
-    const[uname, setUname] = useState(name)
-    const[uemail, setuemail] = useState(email)
-    
-    const handleClick = () => {
-        dispatch(updateUsers({
-            id: id,
-            name: uname,
-            email: uemail
-        }))
-        navigate('/')
-    }
+  // Find the existing user with the given ID
+  const existingElement = users.find((item) => item.id === parseInt(id));
+
+  // Handle case where user is not found
+  if (!existingElement) {
+    return <div>User not found!</div>;
+  }
+
+  // Destructure the name and email from the found user
+  const { name, email } = existingElement;
+
+  // Initialize the state with the existing values of name and email
+  const [uname, setUname] = useState(name);
+  const [uemail, setUemail] = useState(email);
+
+  useEffect(() => {
+    // Whenever the existingElement changes, update the state
+    setUname(name);
+    setUemail(email);
+  }, [name, email]);
+
+  const handleClick = () => {
+    // Dispatch the update action
+    dispatch(
+      updateUsers({
+        id: parseInt(id), // Convert the ID to a number
+        name: uname,
+        email: uemail,
+      })
+    );
+    // Navigate back to the home page or users list
+    navigate('/');
+  };
 
   return (
     <div>
-       <div>
       <div className="input-container">
         <div className="name">
           <input
-            type="name"
+            type="text"
             placeholder="Update Name"
             value={uname}
             onChange={(e) => setUname(e.target.value)}
@@ -41,12 +59,11 @@ export default function Update() {
             type="email"
             placeholder="Update Email"
             value={uemail}
-            onChange={(e) => setuemail(e.target.value)}
+            onChange={(e) => setUemail(e.target.value)}
           />
         </div>
-        <button onClick={handleClick}>submit</button>
+        <button onClick={handleClick}>Submit</button>
       </div>
     </div>
-    </div>
-  )
+  );
 }
